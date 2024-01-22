@@ -15,7 +15,8 @@ def write_a_function(temperature: float = 0.5) -> object:
 
     response = chat.send_message(
         #"Please help write a function to calculate the min of two numbers", **parameters
-        "Write a function that checks if a year is a leap year.", **parameters
+        #"Write a function that checks if a year is a leap year.", **parameters
+        "Why the sky is blue?", **parameters
     )
     print(f"Response from Model: {response.text}")
 
