@@ -4,7 +4,11 @@ https://www.ai-generative.org/news/chatgpt-4-vs-google-gemini-navigating-the-fro
 https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini?_ga=2.217948438.-1460943777.1705824541
 
 pip install -q -U google-generativeai
+<<<<<<< HEAD
 pip install google-cloud-aiplatform
+=======
+pip install vertexai
+>>>>>>> 0d0af4a (1)
 pip install aiogram
 
 gcloud auth print-access-token

@@ -1,4 +1,7 @@
+import vertexai
+import vertexai.preview
 from vertexai.language_models import CodeChatModel
+from google.cloud import aiplatform_v1
 
 
 def write_a_function(temperature: float = 0.5) -> object:
