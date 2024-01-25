@@ -5,7 +5,8 @@ https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini?_ga
 
 pip install -q -U google-generativeai
 <<<<<<< HEAD
-pip install google-cloud-aiplatform
+pip install --upgrade google-cloud-aiplatform
+
 =======
 pip install vertexai
 >>>>>>> 0d0af4a (1)
