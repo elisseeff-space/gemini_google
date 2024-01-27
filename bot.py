@@ -2,7 +2,7 @@ import asyncio
 import logging
 from aiogram import F
 from aiogram import Bot, Dispatcher
-#from aiogram.enums import ParseMode
+from aiogram.enums import ParseMode
 from config_gemini import ConfigBox
 from hdlr import hdlr_1, hdlr_2
 
@@ -12,7 +12,7 @@ async def main():
     logging.basicConfig(level=logging.INFO)
     # Объект бота
     #bot = Bot(token=ConfigBox.config['ya_stt_bot'])#, parse_mode=ParseMode.HTML)
-    bot = Bot(token=ConfigBox.config['GeminiElis_bot'])#, parse_mode=ParseMode.HTML)
+    bot = Bot(token=ConfigBox.config['GeminiElis_bot'], parse_mode=ParseMode.HTML)
     # Диспетчер
     dp = Dispatcher()
 

@@ -2,7 +2,7 @@ import json, os
 import logging
 import sqlite3 as sq
 from enum import Enum
-import vertexai
+from vertexai.language_models import InputOutputTextPair
 
 class ChatModeType(Enum):
     CODE_CHAT = 'Code_Chat'
@@ -25,27 +25,8 @@ class gemini_Config():
     LOCATION = "us-central1" #e.g. us-central1
     chat_mode = {}#ChatModeType.CODE_CHAT
     dialog_messages = {}
-    dialog_instructions = {}
-
-    """
-    vertexai.init(project=PROJECT_ID, location=LOCATION)
-    from vertexai.preview.generative_models import (
-        GenerationConfig,
-        GenerativeModel,
-    )
-    
-    from vertexai.preview.generative_models import (
-        Content,
-        FunctionDeclaration,
-        GenerativeModel,
-        Part,
-        Tool,
-    )
-    """
-
-    #model = GenerativeModel("gemini-pro")
-    
-    dialog_messages = {}
+    dialog_instructions = {} # role
+    dialog_examples = {}
 
     @classmethod
     def __init__(self):
@@ -84,6 +65,15 @@ class gemini_Config():
         self.logger.name = logger_name
     
     @classmethod
+    def add_example(self, chat_id: str, example_in: str, example_out: str)->bool:
+        self.dialog_examples[chat_id].append(
+            InputOutputTextPair(
+                    input_text=example_in,
+                    output_text=example_out,
+            )
+        )
+
+    @classmethod
     def create_dialog(self, chat_id: str)->bool:
         self.dialog_messages[chat_id] = [
             {
@@ -92,6 +82,10 @@ class gemini_Config():
             }
             ]
         self.dialog_instructions[chat_id] = "Ты профессионал программист на python. В остальное время любишь пофилософствовать."
+        self.dialog_examples[chat_id] = [InputOutputTextPair(
+                    input_text="Simple question?",
+                    output_text="Interesting answer!",
+            ),]
     
     @classmethod
     def set_dialog_role(self, chat_id: str, role: str)->bool:

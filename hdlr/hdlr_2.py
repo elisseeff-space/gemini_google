@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Router
 from random import randint
 from aiogram import types
 from aiogram.filters.command import Command
@@ -16,38 +16,17 @@ router = Router()
 # Хэндлер на команду /help
 @router.message(Command("help"))
 async def cmd_help(message: types.Message):
-    help_text = "\n "
-    help_text += ""
-    help_text += "\n"
-    help_text += ""
-    content = as_list(
-        as_marked_section(
-            Bold("Иструкция по применению!"),
-            as_key_value("Всего три правила использования бота", 3),
-            marker="  ",
-        ),
-        as_marked_section(
-            Bold("1. Пишете в сообщении описание того, что надо нарисовать и я нарисую."),
-            "Например, нарисуй котика на полянке, играющего с мячиком.",
-            marker="✅ ",
-        ),
-        as_marked_section(
-            Bold("2. Если бот добавлен в группу, и нужно чтобы он проигнорировал сообщение, то есть НЕ отвечал на него, надо добавить символ @ в сообщение."),
-            "Например, адресно обратиться к одному из участников.\n Тогда бот не будет мешать своими ответами.",
-            marker="✅ ",
-        ),
-        as_marked_section(
-            Bold("3. Если отправить боту картинку, то он перерисует её."),
-            "Например, если хотите увидеть что-то новое в старом изображении.",
-            marker="✅ ",
-        ),
-        HashTag("#OpenAI Imagination"),
-        sep="\n\n",
-    )
-    await message.reply(**content.as_kwargs())
+    help_text = "Инструкция по применению!\n"
+    help_text += "Всего три правила использования бота\n\n"
+    help_text += "1. The PaLM 2 for Chat (chat-bison) foundation model is a large language model (LLM) that excels at language understanding, language generation, and conversations. This chat model is fine-tuned to conduct natural multi-turn conversations, and is ideal for text tasks about code that require back-and-forth interactions.\n\n"
+    help_text += "2. Command /role - Context shapes how the model responds throughout the conversation. For example, you can use context to specify words the model can or cannot use, topics to focus on or avoid, or the response format or style.\n\n"
+    help_text += "3. Боту можно зхадать примеры вопроса и ответа\nCommand /example - Examples for the model to learn how to respond to the conversation.\n\n3.1/examplein [Text of question]\n\n3.2/exampleout [Text of answer]\n"
+    help_text += "#Google #Gemini"
+    await message.answer(help_text)
 
 @router.message(Command("control"))
 async def cmd_control(message: types.Message):
     for _ in ConfigBox.dialog_messages.keys() :
         await message.answer(f"In chat {_}: {len(ConfigBox.dialog_messages[_])} messages.\n")
+
         

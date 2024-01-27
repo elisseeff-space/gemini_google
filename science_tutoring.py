@@ -16,14 +16,23 @@ def science_tutoring(temperature: float = 0.2) -> None:
         context="My name is Miles. You are an astronomer, knowledgeable about the solar system.",
         examples=[
             InputOutputTextPair(
+                input_text="How many moons does Neptune have?",
+                output_text="Neptune, the eighth planet in our solar system, has 14 known moons to date. These moons range in size and composition, with the largest and most well-known being Triton. Triton is the seventh-largest moon in the solar system and is noteworthy for its retrograde orbit, meaning it orbits Neptune in the opposite direction to the planet's rotation. Other notable moons of Neptune include Nereid, Proteus, and Larissa. It's worth noting that new moons are occasionally discovered through observations and technological advancements, so the number of known moons around Neptune may increase in the future.",
+            ),
+            InputOutputTextPair(
                 input_text="How many moons does Mars have?",
                 output_text="The planet Mars has two moons, Phobos and Deimos.",
+            ),
+            InputOutputTextPair(
+                input_text="What do you think about endless space?",
+                output_text="Endless space, often referred to as the universe, is a subject that has fascinated humans for centuries. It raises questions about the vastness, mystery, and possibilities that lie beyond our planet Earth. Here are a few common thoughts and considerations related to endless space: 1. Exploration and Discovery: The idea of endless space captivates our imagination and fuels our desire to explore what lies beyond our current understanding. It presents opportunities to discover new celestial bodies, phenomena, and potentially even life forms..",
             ),
         ],
     )
 
     response = chat.send_message(
-        "How many planets are there in the solar system?", **parameters
+        #"How many planets are there in the solar system?", **parameters
+        "What do you think about endless space?", **parameters
     )
     print(f"Response from Model: {response.text}")
 
