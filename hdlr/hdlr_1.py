@@ -1,15 +1,45 @@
 from datetime import datetime
-import openai
+from vertexai.language_models import ChatModel, InputOutputTextPair
 from aiogram import Router, F, Bot
 from aiogram.types import Message
 from aiogram.filters.command import Command, CommandObject
-from PIL import Image
-import io
 from config_gemini import ConfigBox
-#from assistants_request import assistant_run
-#from openai import AsyncOpenAI
 
 router = Router()
+
+def code_chat_vertex(text_message: str, role: str, temperature: float = 0.2) -> None:
+    chat_model = ChatModel.from_pretrained("chat-bison@001")
+
+    # TODO developer - override these parameters as needed:
+    parameters = {
+        "temperature": temperature,  # Temperature controls the degree of randomness in token selection.
+        "max_output_tokens": 256,  # Token limit determines the maximum amount of text output.
+        "top_p": 0.95,  # Tokens are selected from most probable to least until the sum of their probabilities equals the top_p value.
+        "top_k": 40,  # A top_k of 1 means the selected token is the most probable among all tokens.
+    }
+
+    chat = chat_model.start_chat(
+        context=role,
+        examples=[
+            InputOutputTextPair(
+                input_text="not EXISTS how to use in sqlite3?",
+                output_text="""To use the `NOT EXISTS` operator in sqlite3, you can use the following syntax:
+```
+NOT EXISTS (
+  SELECT *
+  FROM table_name
+  WHERE condition
+)""",
+            ),
+        ],
+    )
+
+    response = chat.send_message(
+        text_message, **parameters
+    )
+    print(f"Response from Model: {response.text}")
+
+    return response
 
 # Хэндлер на команду /test1
 @router.message(Command("role"))
@@ -57,21 +87,23 @@ async def message_with_text(message: Message, bot: Bot):
     
     if flag : await message.answer("Я молчу...")
     else :
-        response = ConfigBox.model.generate_content(message.text, stream=True)
+        response = code_chat_vertex(message.text, role=True)
 
-        final_response = ''
-        for _ in response:
-            final_response += _.text
         chat_id = str(message.chat.id)
         user_id = message.from_user.id
         use_date = str(datetime.now())
 
-        ConfigBox.update_dialog(chat_id, message.text)
+        ConfigBox.update_dialog(chat_id, 'user', message.text)
         params = (chat_id, user_id, use_date, "gemini", message.text, _, 0, 0, 0)
         ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
         ConfigBox.dbase.commit()
 
-        await message.answer(final_response)
+        ConfigBox.update_dialog(chat_id, 'vertex', response.text)
+        params = (chat_id, user_id, use_date, "gemini", response.text, _, 0, 0, 0)
+        ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
+        ConfigBox.dbase.commit()
+
+        await message.answer(response.text)
     
 @router.edited_message(F.text)
 async def edited_message_with_text(message: Message):

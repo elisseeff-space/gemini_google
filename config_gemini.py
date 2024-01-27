@@ -25,7 +25,7 @@ class gemini_Config():
     LOCATION = "us-central1" #e.g. us-central1
     chat_mode = {}#ChatModeType.CODE_CHAT
     dialog_messages = {}
-    dialog_role = {}
+    dialog_instructions = {}
 
     """
     vertexai.init(project=PROJECT_ID, location=LOCATION)
@@ -91,7 +91,7 @@ class gemini_Config():
                 "text": "Ты профессионал программист на python. В остальное время любишь пофилософствовать."
             }
             ]
-        self.dialog_role[chat_id] = "Ты профессионал программист на python. В остальное время любишь пофилософствовать."
+        self.dialog_instructions[chat_id] = "Ты профессионал программист на python. В остальное время любишь пофилософствовать."
     
     @classmethod
     def set_dialog_role(self, chat_id: str, role: str)->bool:
@@ -118,6 +118,10 @@ class gemini_Config():
         #print('self.dialog_messages[chat_id]: ')
         #print(self.dialog_messages[chat_id])
         #input()
+    
+    @classmethod
+    def set_dialog_instructions(self, chat_id: str, role: str)->bool:
+        self.dialog_instructions[chat_id] = role
 
 ConfigBox = gemini_Config()
 
