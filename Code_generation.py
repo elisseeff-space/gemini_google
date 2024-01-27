@@ -12,7 +12,7 @@ def generate_a_function(temperature: float = 0.5) -> object:
 
     code_generation_model = CodeGenerationModel.from_pretrained("code-bison@001")
     response = code_generation_model.predict(
-        prefix="Write a function that checks if a year is a leap year.", **parameters
+        prefix="""not EXISTS how to use in sqlite3""", **parameters
     )
 
     print(f"Response from Model: {response.text}")

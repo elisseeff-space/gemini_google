@@ -4,6 +4,10 @@ import sqlite3 as sq
 from enum import Enum
 import vertexai
 
+class ChatModeType(Enum):
+    CODE_CHAT = 'Code_Chat'
+    CODE_GENERATION = 'Code_Generation'
+    CODE_COMPLETION = 'Code_Completion'
 class gemini_Config():
     logger = logging.getLogger(__name__)
     # настройка обработчика и форматировщика для logger
@@ -19,7 +23,11 @@ class gemini_Config():
 
     PROJECT_ID = "ai-elis-project"
     LOCATION = "us-central1" #e.g. us-central1
+    chat_mode = {}#ChatModeType.CODE_CHAT
+    dialog_messages = {}
+    dialog_role = {}
 
+    """
     vertexai.init(project=PROJECT_ID, location=LOCATION)
     from vertexai.preview.generative_models import (
         GenerationConfig,
@@ -33,8 +41,9 @@ class gemini_Config():
         Part,
         Tool,
     )
+    """
 
-    model = GenerativeModel("gemini-pro")
+    #model = GenerativeModel("gemini-pro")
     
     dialog_messages = {}
 
@@ -75,11 +84,40 @@ class gemini_Config():
         self.logger.name = logger_name
     
     @classmethod
-    def update_dialog(self, chat_id: str, dialog_message: str)->bool:
-        if chat_id in self.dialog_messages.keys() : self.dialog_messages[chat_id].append(dialog_message)
-        else : 
-            self.dialog_messages[chat_id] = []
-            self.dialog_messages[chat_id].append(dialog_message)
+    def create_dialog(self, chat_id: str)->bool:
+        self.dialog_messages[chat_id] = [
+            {
+                "role": "system",
+                "text": "Ты профессионал программист на python. В остальное время любишь пофилософствовать."
+            }
+            ]
+        self.dialog_role[chat_id] = "Ты профессионал программист на python. В остальное время любишь пофилософствовать."
+    
+    @classmethod
+    def set_dialog_role(self, chat_id: str, role: str)->bool:
+        self.dialog_messages[chat_id] = [
+            {
+                "role": "system",
+                "text": role
+            }
+            ]
+        self.dialog_role[chat_id] = role
+        
+    @classmethod
+    def update_dialog(self, chat_id: str, role: str, message: str)->bool:
+        self.dialog_messages[chat_id].append({
+                "role": role,
+                "text": message
+            })
+        
+        if(len(self.dialog_messages[chat_id])) > 8:
+            self.dialog_messages[chat_id].pop(2)
+            self.dialog_messages[chat_id].pop(2)
+            ConfigBox.logger.info(f"self.dialog_messages[chat_id].pop(2). chat_id = {chat_id}")
+
+        #print('self.dialog_messages[chat_id]: ')
+        #print(self.dialog_messages[chat_id])
+        #input()
 
 ConfigBox = gemini_Config()
 

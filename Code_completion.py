@@ -12,7 +12,7 @@ def complete_code_function(temperature: float = 0.2) -> object:
 
     code_completion_model = CodeGenerationModel.from_pretrained("code-gecko@001")
     response = code_completion_model.predict(
-        prefix="def reverse_string(s):", **parameters
+        prefix="""not EXISTS how to use in sqlite3""", **parameters
     )
 
     print(f"Response from Model: {response.text}")
