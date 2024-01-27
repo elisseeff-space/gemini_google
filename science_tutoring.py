@@ -1,3 +1,4 @@
+#import vertexai
 from vertexai.language_models import ChatModel, InputOutputTextPair
 
 
@@ -34,7 +35,11 @@ def science_tutoring(temperature: float = 0.2) -> None:
         #"How many planets are there in the solar system?", **parameters
         "What do you think about endless space?", **parameters
     )
+    #print(response.raw_prediction_response)
+    print(response.safety_attributes)
     print(f"Response from Model: {response.text}")
+
+    #response.safety_attributes
 
     return response
 
