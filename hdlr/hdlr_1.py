@@ -142,13 +142,8 @@ async def message_with_text(message: Message):
         if chat_id not in ConfigBox.dialog_instructions.keys() : ConfigBox.create_dialog(chat_id)
         response = code_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
 
-        ConfigBox.update_dialog(chat_id, 'user', message.text)
-        params = (chat_id, user_id, use_date, "gemini", message.text, _, 0, 0, 0)
-        ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
-        ConfigBox.dbase.commit()
-
         ConfigBox.update_dialog(chat_id, 'vertex', response.text)
-        params = (chat_id, user_id, use_date, "gemini", response.text, _, 0, 0, 0)
+        params = (chat_id, user_id, use_date, "gemini", message.text, response.text, 0, 0, 0)
         ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
         ConfigBox.dbase.commit()
 
