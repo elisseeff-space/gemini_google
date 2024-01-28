@@ -157,6 +157,7 @@ async def set_assistant_instructions(
 
     # Если не переданы никакие аргументы, то
     # command.args будет None
+    if chat_id not in ConfigBox.dialog_instructions.keys() : ConfigBox.create_dialog(chat_id)
     if command.args is None:
         await message.answer(ConfigBox.dialog_instructions[chat_id])
         return
