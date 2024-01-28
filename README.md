@@ -23,6 +23,7 @@ Credentials saved to file: [/home/pavel/.config/gcloud/application_default_crede
 # Bot Command Menu Description
 
 help - Help Иструкция по применению!
+start - Вызов клавиатуры для выбора модели нейросети.
 role - командой /role можно задать инструкцию боту, чтобы он лучше понимал, что ему надо делать.
-examplein - Example of Question
-exampleout - Example of Answer
+examplein - Example of Question.
+exampleout - Example of Answer.
