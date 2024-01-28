@@ -192,11 +192,12 @@ async def message_with_text(message: Message):
     user_first_name = message.from_user.first_name
     user_last_name = message.from_user.last_name
     user_name = message.from_user.username
-    if user_id is None : user_name = ''
-    else : user_name = str(user_id)
-    #user_name = str(user_id)+'.'+user_username+'.'+user_first_name+'.'+user_last_name
-    if user_first_name is not None : user_name += user_first_name
-    if user_last_name is not None : user_name += user_last_name
+    if user_id is None : user_name_full = ''
+    else : user_name_full = str(user_id)
+    if user_name is not None : user_name_full += user_name
+    if user_first_name is not None : user_name_full += user_first_name
+    if user_last_name is not None : user_name_full += user_last_name
+
     now = datetime.now()
     formatted_date = now.strftime("%Y-%m-%d %H:%M:%S")
     response = None
@@ -222,7 +223,7 @@ async def message_with_text(message: Message):
         else:
             ConfigBox.update_dialog(chat_id, 'vertex', response.text)
             role_2_db = ConfigBox.chat_ai_model[chat_id].value + ConfigBox.dialog_instructions[chat_id]
-            params = (chat_id, user_name, formatted_date, role_2_db, message.text, response.text, 0, 0, 0)
+            params = (chat_id, user_name_full, formatted_date, role_2_db, message.text, response.text, 0, 0, 0)
             ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
             ConfigBox.dbase.commit()
 
