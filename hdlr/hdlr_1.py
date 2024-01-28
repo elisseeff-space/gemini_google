@@ -204,7 +204,7 @@ async def message_with_text(message: Message):
 
     if flag : await message.answer("Я молчу...")
     else :
-        if chat_id not in ConfigBox.dialog_instructions.keys() : ConfigBox.create_dialog(chat_id)
+        if chat_id not in ConfigBox.chat_ai_model.keys() : ConfigBox.create_dialog(chat_id)
         #response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
 
         match ConfigBox.chat_ai_model[chat_id]:
