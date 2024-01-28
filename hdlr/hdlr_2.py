@@ -29,4 +29,11 @@ async def cmd_control(message: types.Message):
     for _ in ConfigBox.dialog_messages.keys() :
         await message.answer(f"In chat {_}: {len(ConfigBox.dialog_messages[_])} messages.\n")
 
-        
+@router.message(Command("start"))
+async def cmd_start(message: types.Message):
+    kb = [
+        [types.KeyboardButton(text="С пюрешкой")],
+        [types.KeyboardButton(text="Без пюрешки")]
+    ]
+    keyboard = types.ReplyKeyboardMarkup(keyboard=kb)
+    await message.answer("Как подавать котлеты?", reply_markup=keyboard)

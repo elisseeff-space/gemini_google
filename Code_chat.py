@@ -22,7 +22,7 @@ def write_a_function(temperature: float = 0.5) -> object:
         #"Why the sky is blue?", **parameters
         """not EXISTS how to use in sqlite3""", **parameters
     )
-    print(f"Response from Model: {response.text}")
+    print(f"Response from Model: {response.text}\n")
 
     return response
 

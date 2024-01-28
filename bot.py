@@ -11,8 +11,8 @@ async def main():
     # Включаем логирование, чтобы не пропустить важные сообщения
     logging.basicConfig(level=logging.INFO)
     # Объект бота
-    #bot = Bot(token=ConfigBox.config['ya_stt_bot'])#, parse_mode=ParseMode.HTML)
-    bot = Bot(token=ConfigBox.config['GeminiElis_bot'], parse_mode=ParseMode.HTML)
+    bot = Bot(token=ConfigBox.config['ya_stt_bot'])#, parse_mode=ParseMode.HTML)
+    #bot = Bot(token=ConfigBox.config['GeminiElis_bot'], parse_mode=ParseMode.HTML)
     # Диспетчер
     dp = Dispatcher()
 

@@ -135,7 +135,12 @@ async def message_with_text(message: Message):
     
     chat_id = str(message.chat.id)
     user_id = message.from_user.id
-    use_date = str(datetime.now())
+    user_first_name = message.from_user.first_name
+    user_last_name = message.from_user.last_name
+    user_username = message.from_user.username
+    user_name = user_id+'.'+user_username+'.'+user_first_name+'.'+user_last_name
+    now = datetime.now()
+    formatted_date = now.strftime("%Y-%m-%d %H:%M:%S")
 
     if flag : await message.answer("Я молчу...")
     else :
@@ -143,7 +148,7 @@ async def message_with_text(message: Message):
         response = code_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
 
         ConfigBox.update_dialog(chat_id, 'vertex', response.text)
-        params = (chat_id, user_id, use_date, "gemini", message.text, response.text, 0, 0, 0)
+        params = (chat_id, user_name, formatted_date, ConfigBox.dialog_instructions[chat_id], message.text, response.text, 0, 0, 0)
         ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
         ConfigBox.dbase.commit()
 
