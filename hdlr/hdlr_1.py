@@ -67,6 +67,8 @@ def code_completion_vertex(chat_id:str, text_message: str, role: str, temperatur
     if chat_id not in ConfigBox.dialog_code_completion.keys() :
         ConfigBox.dialog_code_completion[chat_id] = CodeGenerationModel.from_pretrained("code-gecko@001")
 
+    print(f"code_completion_vertex text_message: {text_message}")
+    input()
     response = ConfigBox.dialog_code_completion[chat_id].predict(prefix=text_message, **parameters)
     print(f"code_completion_vertex: {response.text}")
 
@@ -212,13 +214,15 @@ async def message_with_text(message: Message):
             case _:
                 response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
 
-        ConfigBox.update_dialog(chat_id, 'vertex', response.text)
-        role_2_db = ConfigBox.chat_ai_model[chat_id].value + ConfigBox.dialog_instructions[chat_id]
-        params = (chat_id, user_name, formatted_date, role_2_db, message.text, response.text, 0, 0, 0)
-        ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
-        ConfigBox.dbase.commit()
+        if response.text is None : await message.answer(f'Model {ConfigBox.chat_ai_model[chat_id].value} not responding...')
+        else:
+            ConfigBox.update_dialog(chat_id, 'vertex', response.text)
+            role_2_db = ConfigBox.chat_ai_model[chat_id].value + ConfigBox.dialog_instructions[chat_id]
+            params = (chat_id, user_name, formatted_date, role_2_db, message.text, response.text, 0, 0, 0)
+            ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
+            ConfigBox.dbase.commit()
 
-        await message.answer(response.text)
+            await message.answer(response.text)
     
 @router.edited_message(F.text)
 async def edited_message_with_text(message: Message):

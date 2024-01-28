@@ -11,11 +11,16 @@ def complete_code_function(temperature: float = 0.2) -> object:
     }
 
     code_completion_model = CodeGenerationModel.from_pretrained("code-gecko@001")
-    response = code_completion_model.predict(
-        prefix="""not EXISTS how to use in sqlite3""", **parameters
-    )
+    
+    try: 
+        response = code_completion_model.predict(
+        prefix="not EXISTS how to use in sqlite3", **parameters
+        )
+        print(f"Response from Model: {response.text}")
+    except Exception as e:
+        print(e)
 
-    print(f"Response from Model: {response.text}")
+    #print(f"Response from Model: {response.text}")
 
     return response
 
