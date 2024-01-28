@@ -1,16 +1,16 @@
 from datetime import datetime
-from vertexai.language_models import ChatModel, InputOutputTextPair
+from vertexai.language_models import ChatModel, CodeChatModel, CodeGenerationModel, InputOutputTextPair
 from aiogram import Router, F, Bot
 from aiogram.types import Message
 from aiogram.filters.command import Command, CommandObject
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
-from config_gemini import ConfigBox
+from config_gemini import ConfigBox, ChatAI_ModelType
 
 router = Router()
 
-def code_chat_vertex(chat_id:str, text_message: str, role: str, temperature: float = 0.2) -> None:
+def palm_2_chat_vertex(chat_id:str, text_message: str, role: str, temperature: float = 0.2) -> None:
     chat_model = ChatModel.from_pretrained("chat-bison@001")
 
     # TODO developer - override these parameters as needed:
@@ -24,18 +24,70 @@ def code_chat_vertex(chat_id:str, text_message: str, role: str, temperature: flo
     #input()
     #print(ConfigBox.dialog_examples[chat_id])
     #input()
-    chat = chat_model.start_chat(
-        context=role,
-        examples=ConfigBox.dialog_examples[chat_id]
-    )
+    if chat_id not in ConfigBox.dialog_chat_palm.keys() :
+        ConfigBox.dialog_chat_palm[chat_id] = chat_model.start_chat(
+            context=role,
+            examples=ConfigBox.dialog_examples[chat_id]
+        )
 
-    response = chat.send_message(
+    response = ConfigBox.dialog_chat_palm[chat_id].send_message(
         text_message, **parameters
     )
-    #print(f"Response from Model: {response.text}")
+    print(f"palm_2_chat_vertex: {response.text}")
 
     return response
 
+def code_chat_vertex(chat_id:str, text_message: str, role: str, temperature: float = 0.5) -> object:
+    """Example of using Codey for Code Chat Model to write a function."""
+
+    # TODO developer - override these parameters as needed:
+    parameters = {
+        "temperature": temperature,  # Temperature controls the degree of randomness in token selection.
+        "max_output_tokens": 1024,  # Token limit determines the maximum amount of text output.
+    }
+
+    code_chat_model = CodeChatModel.from_pretrained("codechat-bison@001")
+    
+    if chat_id not in ConfigBox.dialog_code_chat.keys() :
+        ConfigBox.dialog_code_chat[chat_id] = code_chat_model.start_chat()
+
+    response = ConfigBox.dialog_code_chat[chat_id].send_message(text_message, **parameters)
+    print(f"code_chat_vertex: {response.text}\n")
+
+    return response
+
+def code_completion_vertex(chat_id:str, text_message: str, role: str, temperature: float = 0.2) -> object:
+
+    # TODO developer - override these parameters as needed:
+    parameters = {
+        "temperature": temperature,  # Temperature controls the degree of randomness in token selection.
+        "max_output_tokens": 64,  # Token limit determines the maximum amount of text output.
+    }
+
+    if chat_id not in ConfigBox.dialog_code_completion.keys() :
+        ConfigBox.dialog_code_completion[chat_id] = CodeGenerationModel.from_pretrained("code-gecko@001")
+
+    response = ConfigBox.dialog_code_completion[chat_id].predict(prefix=text_message, **parameters)
+    print(f"code_completion_vertex: {response.text}")
+
+    return response
+
+def code_generation_vertex(chat_id:str, text_message: str, role: str, temperature: float = 0.5) -> object:
+
+    # TODO developer - override these parameters as needed:
+    parameters = {
+        "temperature": temperature,  # Temperature controls the degree of randomness in token selection.
+        "max_output_tokens": 256,  # Token limit determines the maximum amount of text output.
+    }
+
+    if chat_id not in ConfigBox.dialog_code_generation.keys() :
+        ConfigBox.dialog_code_generation[chat_id] = CodeGenerationModel.from_pretrained("code-bison@001")
+
+    response = ConfigBox.dialog_code_generation[chat_id].predict(prefix=text_message, **parameters)
+
+    print(f"code_generation_vertex: {response.text}")
+
+    return response
 class CreateExample(StatesGroup):
     examplein = State()
     exampleout = State()
@@ -138,17 +190,31 @@ async def message_with_text(message: Message):
     user_first_name = message.from_user.first_name
     user_last_name = message.from_user.last_name
     user_username = message.from_user.username
-    user_name = user_id+'.'+user_username+'.'+user_first_name+'.'+user_last_name
+    user_name = str(user_id)+'.'+user_username+'.'+user_first_name+'.'+user_last_name
     now = datetime.now()
     formatted_date = now.strftime("%Y-%m-%d %H:%M:%S")
+    response = None
 
     if flag : await message.answer("Я молчу...")
     else :
         if chat_id not in ConfigBox.dialog_instructions.keys() : ConfigBox.create_dialog(chat_id)
-        response = code_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+        #response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+
+        match ConfigBox.chat_ai_model[chat_id]:
+            case ChatAI_ModelType.PALM_2_CHAT:
+                response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+            case ChatAI_ModelType.CODE_CHAT:
+                response = code_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+            case ChatAI_ModelType.CODE_COMPLETION:
+                response = code_completion_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])  
+            case ChatAI_ModelType.CODE_GENERATION:
+                response = code_generation_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+            case _:
+                response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
 
         ConfigBox.update_dialog(chat_id, 'vertex', response.text)
-        params = (chat_id, user_name, formatted_date, ConfigBox.dialog_instructions[chat_id], message.text, response.text, 0, 0, 0)
+        role_2_db = ConfigBox.chat_ai_model[chat_id].value + ConfigBox.dialog_instructions[chat_id]
+        params = (chat_id, user_name, formatted_date, role_2_db, message.text, response.text, 0, 0, 0)
         ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
         ConfigBox.dbase.commit()
 

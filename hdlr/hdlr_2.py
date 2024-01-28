@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import Router, F
 from random import randint
 from aiogram import types
 from aiogram.filters.command import Command
@@ -6,7 +6,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.enums import ParseMode
-from config_gemini import ConfigBox
+from config_gemini import ConfigBox, ChatAI_ModelType
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.utils.formatting import (
     Bold, as_list, as_marked_section, as_key_value, HashTag
 )
@@ -31,9 +32,108 @@ async def cmd_control(message: types.Message):
 
 @router.message(Command("start"))
 async def cmd_start(message: types.Message):
-    kb = [
-        [types.KeyboardButton(text="С пюрешкой")],
-        [types.KeyboardButton(text="Без пюрешки")]
-    ]
-    keyboard = types.ReplyKeyboardMarkup(keyboard=kb)
-    await message.answer("Как подавать котлеты?", reply_markup=keyboard)
+    builder = ReplyKeyboardBuilder()
+    
+    builder.row(types.KeyboardButton(text="The PaLM 2 for Chat (chat-bison)"), types.KeyboardButton(text="Codey for Code Completion (code-gecko)")),
+    builder.row(types.KeyboardButton(text="Codey for Code Chat (codechat-bison)"), types.KeyboardButton(text="Codey for Code Generation (code-bison)")),
+    builder.add(types.KeyboardButton(text="Show Model in use!"))
+    builder.adjust(2)
+
+    keyboard = builder.as_markup(resize_keyboard=True,
+                                 input_field_placeholder="Выберите модель нейросети, с которой будем общаться.")
+
+    await message.answer("Здесь можно выбрать модель нейросети, с которой будем общаться.", reply_markup=keyboard)
+
+@router.message(F.text == "The PaLM 2 for Chat (chat-bison)")
+async def palm_2_for_chat(message: types.Message):
+    builder = InlineKeyboardBuilder()
+    builder.add(types.InlineKeyboardButton(
+        text="Select the model The PaLM 2 for Chat (chat-bison)",
+        callback_data=ChatAI_ModelType.PALM_2_CHAT.value)
+    )
+    await message.answer(
+        "Нажмите на кнопку, чтобы Select the model The PaLM 2 for Chat (chat-bison)",
+        reply_markup=builder.as_markup()
+    )
+
+@router.callback_query(F.data == ChatAI_ModelType.PALM_2_CHAT.value)
+async def set_palm_2_chat_model(callback: types.CallbackQuery):
+    await callback.message.answer(f'Model {ChatAI_ModelType.PALM_2_CHAT.value} selected!')
+    chat_id = str(callback.message.chat.id)
+    ConfigBox.chat_ai_model[chat_id] = ChatAI_ModelType.PALM_2_CHAT
+    await callback.answer(
+        text=f'Model {ChatAI_ModelType.PALM_2_CHAT.value} selected!',
+        show_alert=True
+    )
+
+@router.message(F.text == "Codey for Code Chat (codechat-bison)")
+async def codey_for_code_chat(message: types.Message):
+    builder = InlineKeyboardBuilder()
+    builder.add(types.InlineKeyboardButton(
+        text="Select the model Codey for Code Chat (codechat-bison)",
+        callback_data=ChatAI_ModelType.CODE_CHAT.value)
+    )
+    await message.answer(
+        "Нажмите на кнопку, чтобы Select the model Codey for Code Chat (codechat-bison)",
+        reply_markup=builder.as_markup()
+    )
+
+@router.callback_query(F.data == ChatAI_ModelType.CODE_CHAT.value)
+async def set_codey_for_code_chat_model(callback: types.CallbackQuery):
+    await callback.message.answer(f'Model {ChatAI_ModelType.CODE_CHAT.value} selected!')
+    chat_id = str(callback.message.chat.id)
+    ConfigBox.chat_ai_model[chat_id] = ChatAI_ModelType.CODE_CHAT
+    await callback.answer(
+        text=f'Model {ChatAI_ModelType.CODE_CHAT.value} selected!',
+        show_alert=True
+    )
+
+@router.message(F.text == "Codey for Code Completion (code-gecko)")
+async def codey_for_chat_completion(message: types.Message):
+    builder = InlineKeyboardBuilder()
+    builder.add(types.InlineKeyboardButton(
+        text="Select the model Codey for Code Completion (code-gecko)",
+        callback_data=ChatAI_ModelType.CODE_COMPLETION.value)
+    )
+    await message.answer(
+        "Нажмите на кнопку, чтобы Select the model Codey for Code Completion (code-gecko)",
+        reply_markup=builder.as_markup()
+    )
+
+@router.callback_query(F.data == ChatAI_ModelType.CODE_COMPLETION.value)
+async def set_code_complition_model(callback: types.CallbackQuery):
+    await callback.message.answer(f'Model {ChatAI_ModelType.CODE_COMPLETION.value} selected!')
+    chat_id = str(callback.message.chat.id)
+    ConfigBox.chat_ai_model[chat_id] = ChatAI_ModelType.CODE_COMPLETION
+    await callback.answer(
+        text=f'Model {ChatAI_ModelType.CODE_COMPLETION.value} selected!',
+        show_alert=True
+    )
+
+@router.message(F.text == "Codey for Code Generation (code-bison)")
+async def codey_for_code_chat_generation(message: types.Message):
+    builder = InlineKeyboardBuilder()
+    builder.add(types.InlineKeyboardButton(
+        text="Select the model Codey for Code Generation (code-bison)",
+        callback_data=ChatAI_ModelType.CODE_GENERATION.value)
+    )
+    await message.answer(
+        "Нажмите на кнопку, чтобы Select the model Codey for Code Generation (code-bison)",
+        reply_markup=builder.as_markup()
+    )
+
+@router.callback_query(F.data == ChatAI_ModelType.CODE_GENERATION.value)
+async def set_codey_for_code_chat_generation_model(callback: types.CallbackQuery):
+    await callback.message.answer(f'Model {ChatAI_ModelType.CODE_GENERATION.value} selected!')
+    chat_id = str(callback.message.chat.id)
+    ConfigBox.chat_ai_model[chat_id] = ChatAI_ModelType.CODE_GENERATION
+    await callback.answer(
+        text=f'Model {ChatAI_ModelType.CODE_GENERATION.value} selected!',
+        show_alert=True
+    )
+
+@router.message(F.text == "Show Model in use!")
+async def show_model_in_use(message: types.Message):
+    chat_id = str(message.chat.id)
+    if chat_id not in ConfigBox.chat_ai_model.keys() : ConfigBox.create_dialog(chat_id)
+    await message.answer(f"Now run: {ConfigBox.chat_ai_model[chat_id].value}!")

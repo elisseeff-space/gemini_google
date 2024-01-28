@@ -4,10 +4,12 @@ import sqlite3 as sq
 from enum import Enum
 from vertexai.language_models import InputOutputTextPair
 
-class ChatModeType(Enum):
-    CODE_CHAT = 'Code_Chat'
-    CODE_GENERATION = 'Code_Generation'
-    CODE_COMPLETION = 'Code_Completion'
+class ChatAI_ModelType(Enum):
+    PALM_2_CHAT = 'Palm_2_Chat' # The PaLM 2 for Chat (chat-bison)
+    CODE_CHAT = 'Code_Chat' # Codey for Code Chat (codechat-bison)
+    CODE_GENERATION = 'Code_Generation' # Codey for Code Completion (code-gecko)
+    CODE_COMPLETION = 'Code_Completion' # Codey for Code Generation (code-bison)"
+    
 class gemini_Config():
     logger = logging.getLogger(__name__)
     # настройка обработчика и форматировщика для logger
@@ -23,10 +25,14 @@ class gemini_Config():
 
     PROJECT_ID = "ai-elis-project"
     LOCATION = "us-central1" #e.g. us-central1
-    chat_mode = {}#ChatModeType.CODE_CHAT
+    chat_ai_model = {} # Default: ChatAI_ModelType.PALM_2_CHAT
     dialog_messages = {}
     dialog_instructions = {} # role
     dialog_examples = {}
+    dialog_chat_palm = {}
+    dialog_code_chat = {}
+    dialog_code_completion = {}
+    dialog_code_generation = {}
 
     @classmethod
     def __init__(self):
@@ -53,12 +59,6 @@ class gemini_Config():
         else: raise ValueError("Unsupported operating system")
         file = open(in_file, 'r')
         self.config = json.load(file)
-
-        # create OpenAI connection
-
-        #self.client = OpenAI(api_key = self.config['openai'])
-
-    @classmethod
     
     @classmethod
     def set_logger_name(self, logger_name: str)->bool:
@@ -86,6 +86,7 @@ class gemini_Config():
                     input_text="Simple question?",
                     output_text="Interesting answer!",
             ),]
+        self.chat_ai_model[chat_id] = ChatAI_ModelType.PALM_2_CHAT
     
     @classmethod
     def set_dialog_role(self, chat_id: str, role: str)->bool:
