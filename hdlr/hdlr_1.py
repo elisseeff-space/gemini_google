@@ -33,7 +33,7 @@ def palm_2_chat_vertex(chat_id:str, text_message: str, role: str, temperature: f
     response = ConfigBox.dialog_chat_palm[chat_id].send_message(
         text_message, **parameters
     )
-    print(f"palm_2_chat_vertex: {response.text}")
+    #print(f"palm_2_chat_vertex: {response.text}")
 
     return response
 
@@ -52,7 +52,7 @@ def code_chat_vertex(chat_id:str, text_message: str, role: str, temperature: flo
         ConfigBox.dialog_code_chat[chat_id] = code_chat_model.start_chat()
 
     response = ConfigBox.dialog_code_chat[chat_id].send_message(text_message, **parameters)
-    print(f"code_chat_vertex: {response.text}\n")
+    #print(f"code_chat_vertex: {response.text}\n")
 
     return response
 
@@ -67,10 +67,10 @@ def code_completion_vertex(chat_id:str, text_message: str, role: str, temperatur
     if chat_id not in ConfigBox.dialog_code_completion.keys() :
         ConfigBox.dialog_code_completion[chat_id] = CodeGenerationModel.from_pretrained("code-gecko@001")
 
-    print(f"code_completion_vertex text_message: {text_message}")
-    input()
+    #print(f"code_completion_vertex text_message: {text_message}")
+    #input()
     response = ConfigBox.dialog_code_completion[chat_id].predict(prefix=text_message, **parameters)
-    print(f"code_completion_vertex: {response.text}")
+    #print(f"code_completion_vertex: {response.text}")
 
     return response
 
@@ -87,7 +87,7 @@ def code_generation_vertex(chat_id:str, text_message: str, role: str, temperatur
 
     response = ConfigBox.dialog_code_generation[chat_id].predict(prefix=text_message, **parameters)
 
-    print(f"code_generation_vertex: {response.text}")
+    #print(f"code_generation_vertex: {response.text}")
 
     return response
 class CreateExample(StatesGroup):
@@ -191,11 +191,11 @@ async def message_with_text(message: Message):
     user_id = message.from_user.id
     user_first_name = message.from_user.first_name
     user_last_name = message.from_user.last_name
-    user_username = message.from_user.username
+    user_name = message.from_user.username
     if user_id is not None : user_name = str(user_id)
     else : user_name = ''
     #user_name = str(user_id)+'.'+user_username+'.'+user_first_name+'.'+user_last_name
-    if user_username is not None : user_name += user_username
+    if user_name is not None : user_name += user_name
     if user_first_name is not None : user_name += user_first_name
     if user_last_name is not None : user_name += user_last_name
     now = datetime.now()
