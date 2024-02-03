@@ -177,22 +177,27 @@ async def set_assistant_instructions(
 @router.message(F.text)
 async def message_with_text(message: Message):
     
-    #query = message.text.replace('"', '^')
-    query = message.text.replace('"', '^')
-
-    words = query.split()
-
-    # Make the desired change to the first word
     flag = False
-    for _ in words :
-        if _[0] == '@' : 
-            flag = True
-    
     chat_id = str(message.chat.id)
     user_id = message.from_user.id
     user_first_name = message.from_user.first_name
     user_last_name = message.from_user.last_name
     user_name = message.from_user.username
+
+    if chat_id not in ConfigBox.chat_ai_model.keys() : ConfigBox.create_dialog(chat_id)
+    if ConfigBox.chat_ai_model[chat_id] == ChatAI_ModelType.CODE_GENERATION or ConfigBox.chat_ai_model[chat_id] == ChatAI_ModelType.CODE_COMPLETION : flag = False
+    else : 
+        #query = message.text.replace('"', '^')
+        query = message.text.replace('"', '^')
+
+        words = query.split()
+
+        # Make the desired change to the first word
+        
+        for _ in words :
+            if _[0] == '@' : 
+                flag = True
+    
     if user_id is None : user_name_full = ''
     else : user_name_full = str(user_id)
     if user_name is not None : user_name_full += user_name
@@ -233,19 +238,63 @@ async def message_with_text(message: Message):
 @router.edited_message(F.text)
 async def edited_message_with_text(message: Message):
     
-    query = message.text.replace('"', '^')
-
-    words = query.split()
-
-    # Make the desired change to the first word
     flag = False
-    for _ in words :
-        if _[0] == '@' : 
-            flag = True
+    chat_id = str(message.chat.id)
+    user_id = message.from_user.id
+    user_first_name = message.from_user.first_name
+    user_last_name = message.from_user.last_name
+    user_name = message.from_user.username
     
+    if chat_id not in ConfigBox.chat_ai_model.keys() : ConfigBox.create_dialog(chat_id)
+    if ConfigBox.chat_ai_model[chat_id] == ChatAI_ModelType.CODE_GENERATION or ConfigBox.chat_ai_model[chat_id] == ChatAI_ModelType.CODE_COMPLETION : flag = False
+    else : 
+        #query = message.text.replace('"', '^')
+        query = message.text.replace('"', '^')
+
+        words = query.split()
+
+        # Make the desired change to the first word
+        
+        for _ in words :
+            if _[0] == '@' : 
+                flag = True
+    
+    if user_id is None : user_name_full = ''
+    else : user_name_full = str(user_id)
+    if user_name is not None : user_name_full += user_name
+    if user_first_name is not None : user_name_full += user_first_name
+    if user_last_name is not None : user_name_full += user_last_name
+
+    now = datetime.now()
+    formatted_date = now.strftime("%Y-%m-%d %H:%M:%S")
+    response = None
+
     if flag : await message.answer("Я молчу...")
     else :
-        await message.answer(f"Message is edited:\n{message.message_id}") 
+        if chat_id not in ConfigBox.chat_ai_model.keys() : ConfigBox.create_dialog(chat_id)
+        #response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+
+        match ConfigBox.chat_ai_model[chat_id]:
+            case ChatAI_ModelType.PALM_2_CHAT:
+                response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+            case ChatAI_ModelType.CODE_CHAT:
+                response = code_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+            case ChatAI_ModelType.CODE_COMPLETION:
+                response = code_completion_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])  
+            case ChatAI_ModelType.CODE_GENERATION:
+                response = code_generation_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+            case _:
+                response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
+
+        if response.text is None : await message.answer(f'Model {ConfigBox.chat_ai_model[chat_id].value} not responding...')
+        else:
+            ConfigBox.update_dialog(chat_id, 'vertex', response.text)
+            role_2_db = ConfigBox.chat_ai_model[chat_id].value + ConfigBox.dialog_instructions[chat_id]
+            params = (chat_id, user_name_full, formatted_date, role_2_db, message.text, response.text, 0, 0, 0)
+            ConfigBox.dbase.execute('insert into tbl_ya_gpt_log values (?,?,?,?,?,?,?,?,?)', params)
+            ConfigBox.dbase.commit()
+
+            await message.answer(response.text)
         
 @router.message(F.animation)
 async def echo_gif(message: Message):
