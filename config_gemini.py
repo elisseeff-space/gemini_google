@@ -9,6 +9,7 @@ class ChatAI_ModelType(Enum):
     CODE_CHAT = 'Code_Chat' # Codey for Code Chat (codechat-bison)
     CODE_GENERATION = 'Code_Generation' # Codey for Code Completion (code-gecko)
     CODE_COMPLETION = 'Code_Completion' # Codey for Code Generation (code-bison)"
+    GEMINI_PRO = 'Gemini_Pro' # A model size that balances capability and efficiency. https://ai.google.dev/models/gemini?hl=en
     
 class gemini_Config():
     logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ class gemini_Config():
     dialog_messages = {}
     dialog_instructions = {} # role
     dialog_examples = {}
+    dialog_chat_gemini_pro = {}
     dialog_chat_palm = {}
     dialog_code_chat = {}
     dialog_code_completion = {}
@@ -54,8 +56,8 @@ class gemini_Config():
         self.cur = self.dbase.cursor()
         
 
-        if os.name == 'posix': in_file = "/home/pavel/cfg/config.json"
-        elif os.name == 'nt': in_file = str(r'C:\Users\Eliseev\GitHub\cfg\config.json')
+        if os.name == 'posix': in_file = "/home/pavel/cfg/google_config.json"
+        elif os.name == 'nt': in_file = str(r'C:\Users\Eliseev\GitHub\cfg\google_config.json')
         else: raise ValueError("Unsupported operating system")
         file = open(in_file, 'r')
         self.config = json.load(file)

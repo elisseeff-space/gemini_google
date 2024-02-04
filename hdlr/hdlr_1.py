@@ -7,8 +7,21 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from config_gemini import ConfigBox, ChatAI_ModelType
+import google.generativeai as genai
 
 router = Router()
+
+def gemini_pro_chat(chat_id:str, text_message: str, role: str, temperature: float = 0.2) -> None:
+    
+    genai.configure(api_key=ConfigBox.config['GOOGLE_API_KEY'])
+
+    if chat_id not in ConfigBox.dialog_chat_gemini_pro.keys() :
+        model = genai.GenerativeModel('gemini-pro')
+        ConfigBox.dialog_chat_gemini_pro[chat_id] = model.start_chat(history=[])
+    
+    response = ConfigBox.dialog_chat_gemini_pro[chat_id].send_message(text_message)
+    
+    return response
 
 def palm_2_chat_vertex(chat_id:str, text_message: str, role: str, temperature: float = 0.2) -> None:
     chat_model = ChatModel.from_pretrained("chat-bison@001")
@@ -185,7 +198,7 @@ async def message_with_text(message: Message):
     user_name = message.from_user.username
 
     if chat_id not in ConfigBox.chat_ai_model.keys() : ConfigBox.create_dialog(chat_id)
-    if ConfigBox.chat_ai_model[chat_id] == ChatAI_ModelType.CODE_GENERATION or ConfigBox.chat_ai_model[chat_id] == ChatAI_ModelType.CODE_COMPLETION : flag = False
+    if ConfigBox.chat_ai_model[chat_id] in (ChatAI_ModelType.CODE_GENERATION, ChatAI_ModelType.CODE_COMPLETION, ChatAI_ModelType.GEMINI_PRO) : flag = False
     else : 
         #query = message.text.replace('"', '^')
         query = message.text.replace('"', '^')
@@ -214,6 +227,8 @@ async def message_with_text(message: Message):
         #response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
 
         match ConfigBox.chat_ai_model[chat_id]:
+            case ChatAI_ModelType.GEMINI_PRO:
+                response = gemini_pro_chat(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
             case ChatAI_ModelType.PALM_2_CHAT:
                 response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
             case ChatAI_ModelType.CODE_CHAT:
@@ -275,6 +290,8 @@ async def edited_message_with_text(message: Message):
         #response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
 
         match ConfigBox.chat_ai_model[chat_id]:
+            case ChatAI_ModelType.GEMINI_PRO:
+                response = chat.send_message("In one sentence, explain how a computer works to a young child.")
             case ChatAI_ModelType.PALM_2_CHAT:
                 response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
             case ChatAI_ModelType.CODE_CHAT:

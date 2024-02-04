@@ -30,11 +30,22 @@ async def cmd_control(message: types.Message):
     for _ in ConfigBox.dialog_messages.keys() :
         await message.answer(f"In chat {_}: {len(ConfigBox.dialog_messages[_])} messages.\n")
 
+        if len(ConfigBox.dialog_chat_gemini_pro[_].history) > 0 :
+            await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_chat_gemini_pro[_].history)} messages.\n")
+        #if len(ConfigBox.dialog_chat_palm[_].history) > 0 :
+        #    await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_chat_palm[_].history)} messages.\n")
+        if len(ConfigBox.dialog_code_chat[_].history) > 0 :
+            await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_code_chat[_].history)} messages.\n")
+        if len(ConfigBox.dialog_code_completion[_].history) > 0 :
+            await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_code_completion[_].history)} messages.\n")
+        if len(ConfigBox.dialog_code_generation[_].history) > 0 :
+            await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_code_generation[_].history)} messages.\n")
+
 @router.message(Command("start"))
 async def cmd_start(message: types.Message):
     builder = ReplyKeyboardBuilder()
     
-    builder.row(types.KeyboardButton(text="The PaLM 2 for Chat (chat-bison)"), types.KeyboardButton(text="Codey for Code Completion (code-gecko)")),
+    builder.row(types.KeyboardButton(text="Gemini Pro (gemini-pro)"), types.KeyboardButton(text="The PaLM 2 for Chat (chat-bison)"), types.KeyboardButton(text="Codey for Code Completion (code-gecko)")),
     builder.row(types.KeyboardButton(text="Codey for Code Chat (codechat-bison)"), types.KeyboardButton(text="Codey for Code Generation (code-bison)")),
     builder.add(types.KeyboardButton(text="Show Model in use!"))
     builder.adjust(2)
@@ -43,6 +54,28 @@ async def cmd_start(message: types.Message):
                                  input_field_placeholder="Выберите модель нейросети, с которой будем общаться.")
 
     await message.answer("Здесь можно выбрать модель нейросети, с которой будем общаться.", reply_markup=keyboard)
+
+@router.message(F.text == "Gemini Pro (gemini-pro)")
+async def gemini_pro(message: types.Message):
+    builder = InlineKeyboardBuilder()
+    builder.add(types.InlineKeyboardButton(
+        text="Select the model Gemini Pro (gemini-pro)",
+        callback_data=ChatAI_ModelType.GEMINI_PRO.value)
+    )
+    await message.answer(
+        "Нажмите на кнопку, чтобы Select the model Gemini Pro (gemini-pro)",
+        reply_markup=builder.as_markup()
+    )
+
+@router.callback_query(F.data == ChatAI_ModelType.GEMINI_PRO.value)
+async def set_gemini_pro_model(callback: types.CallbackQuery):
+    await callback.message.answer(f'Model {ChatAI_ModelType.GEMINI_PRO.value} selected!')
+    chat_id = str(callback.message.chat.id)
+    ConfigBox.chat_ai_model[chat_id] = ChatAI_ModelType.GEMINI_PRO
+    await callback.answer(
+        text=f'Model {ChatAI_ModelType.GEMINI_PRO.value} selected!',
+        show_alert=True
+    )
 
 @router.message(F.text == "The PaLM 2 for Chat (chat-bison)")
 async def palm_2_for_chat(message: types.Message):
