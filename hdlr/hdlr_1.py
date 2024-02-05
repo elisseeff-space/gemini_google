@@ -1,5 +1,9 @@
 from datetime import datetime
 from vertexai.language_models import ChatModel, CodeChatModel, CodeGenerationModel, InputOutputTextPair
+import textwrap
+from IPython.display import display
+from IPython.display import Markdown
+
 from aiogram import Router, F, Bot
 from aiogram.types import Message
 from aiogram.filters.command import Command, CommandObject
@@ -10,6 +14,10 @@ from config_gemini import ConfigBox, ChatAI_ModelType
 import google.generativeai as genai
 
 router = Router()
+
+def to_markdown(text):
+  text = text.replace('•', '  *')
+  return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
 
 def gemini_pro_chat(chat_id:str, text_message: str, role: str, temperature: float = 0.2) -> None:
     
@@ -64,7 +72,7 @@ def code_chat_vertex(chat_id:str, text_message: str, role: str, temperature: flo
     if chat_id not in ConfigBox.dialog_code_chat.keys() :
         ConfigBox.dialog_code_chat[chat_id] = code_chat_model.start_chat()
 
-    response = ConfigBox.dialog_code_chat[chat_id].send_message(text_message, **parameters)
+    response = ConfigBox.dialog_code_chat[chat_id].send_message(text_message, stream=True, safety_settings={'HARASSMENT':'block_none'})
     #print(f"code_chat_vertex: {response.text}\n")
 
     return response
@@ -249,7 +257,7 @@ async def message_with_text(message: Message):
             ConfigBox.dbase.commit()
 
             await message.answer(response.text)
-    
+
 @router.edited_message(F.text)
 async def edited_message_with_text(message: Message):
     
@@ -259,9 +267,9 @@ async def edited_message_with_text(message: Message):
     user_first_name = message.from_user.first_name
     user_last_name = message.from_user.last_name
     user_name = message.from_user.username
-    
+
     if chat_id not in ConfigBox.chat_ai_model.keys() : ConfigBox.create_dialog(chat_id)
-    if ConfigBox.chat_ai_model[chat_id] == ChatAI_ModelType.CODE_GENERATION or ConfigBox.chat_ai_model[chat_id] == ChatAI_ModelType.CODE_COMPLETION : flag = False
+    if ConfigBox.chat_ai_model[chat_id] in (ChatAI_ModelType.CODE_GENERATION, ChatAI_ModelType.CODE_COMPLETION, ChatAI_ModelType.GEMINI_PRO) : flag = False
     else : 
         #query = message.text.replace('"', '^')
         query = message.text.replace('"', '^')
@@ -291,7 +299,7 @@ async def edited_message_with_text(message: Message):
 
         match ConfigBox.chat_ai_model[chat_id]:
             case ChatAI_ModelType.GEMINI_PRO:
-                response = chat.send_message("In one sentence, explain how a computer works to a young child.")
+                response = gemini_pro_chat(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
             case ChatAI_ModelType.PALM_2_CHAT:
                 response = palm_2_chat_vertex(chat_id, message.text, role=ConfigBox.dialog_instructions[chat_id])
             case ChatAI_ModelType.CODE_CHAT:
