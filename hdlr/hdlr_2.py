@@ -30,16 +30,20 @@ async def cmd_control(message: types.Message):
     for _ in ConfigBox.dialog_messages.keys() :
         await message.answer(f"In chat {_}: {len(ConfigBox.dialog_messages[_])} messages.\n")
 
-        if len(ConfigBox.dialog_chat_gemini_pro[_].history) > 0 :
-            await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_chat_gemini_pro[_].history)} messages.\n")
+        if _ in ConfigBox.dialog_chat_gemini_pro.keys() :
+            if len(ConfigBox.dialog_chat_gemini_pro[_].history) > 0 :
+                await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_chat_gemini_pro[_].history)} messages.\n")
         #if len(ConfigBox.dialog_chat_palm[_].history) > 0 :
         #    await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_chat_palm[_].history)} messages.\n")
-        if len(ConfigBox.dialog_code_chat[_].history) > 0 :
-            await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_code_chat[_].history)} messages.\n")
-        if len(ConfigBox.dialog_code_completion[_].history) > 0 :
-            await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_code_completion[_].history)} messages.\n")
-        if len(ConfigBox.dialog_code_generation[_].history) > 0 :
-            await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_code_generation[_].history)} messages.\n")
+        if _ in ConfigBox.dialog_code_chat.keys() :
+            if len(ConfigBox.dialog_code_chat[_].history) > 0 :
+                await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_code_chat[_].history)} messages.\n")
+        if _ in ConfigBox.dialog_code_completion.keys() :
+            if len(ConfigBox.dialog_code_completion[_].history) > 0 :
+                await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_code_completion[_].history)} messages.\n")
+        if _ in ConfigBox.dialog_code_generation.keys() :
+            if len(ConfigBox.dialog_code_generation[_].history) > 0 :
+                await message.answer(f"Model {ConfigBox.chat_ai_model[_]}: {len(ConfigBox.dialog_code_generation[_].history)} messages.\n")
 
 @router.message(Command("start"))
 async def cmd_start(message: types.Message):
